@@ -86,12 +86,21 @@ def main(
 
     config = ConfigParser()
     config.read(abspath(config_file or "config.ini"))
-    css = get_css(abspath(config.get("DEFAULT", "ScssFile")))
+    
+    # Default CSS
+    default_css = get_css(abspath(config.get("DEFAULT", "ScssFile")))
+
     for print_format_name in config.sections():
         file_path = abspath(config.get(print_format_name, "TemplateFile"))
 
         if only_template and Path(only_template).name != file_path.name:
             continue
+            
+        # Check for specific CSS override in the section
+        if config.has_option(print_format_name, "ScssFile"):
+            css = get_css(abspath(config.get(print_format_name, "ScssFile")))
+        else:
+            css = default_css
 
         print(f"Syncing {file_path.name} -> Print Format '{print_format_name}'")
         sync(

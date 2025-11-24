@@ -1,0 +1,134 @@
+{% set company = frappe.get_doc("Company", doc.company) %}
+{% set company_address_name = frappe.db.get_value("Dynamic Link", filters={"link_doctype": "Company", "link_name": doc.company, "parenttype": "Address"}, fieldname="parent") %}
+{% set cmp_addr = frappe.get_doc("Address", company_address_name) if company_address_name else None %}
+
+<!-- Modern Invoice Header (for Letter Head) -->
+<div class="modern-header">
+    <div class="header-content">
+        <div class="header-left">
+            <h1 class="invoice-title">{{ _("INVOICE") }}</h1>
+            <p class="company-tagline">{{ _("from") }} {{ company.company_name }}</p>
+        </div>
+        <div class="header-right">
+            <div class="company-logo">
+                {% if company.company_logo %}
+                    <!-- Dynamic logo from Company custom field -->
+                    <img src="{{ company.company_logo }}" alt="{{ company.company_name }} Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                {% else %}
+                    <!-- Fallback placeholder when no logo is uploaded -->
+                    <div class="logo-placeholder">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="60" height="60" rx="8" fill="white" opacity="0.3"/>
+                            <path d="M30 15L45 25V40L30 50L15 40V25L30 15Z" fill="white"/>
+                        </svg>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="company-info-header">
+                <p class="company-name-header"><strong>{{ company.company_name }}</strong></p>
+                {% if cmp_addr %}
+                <p>{{ cmp_addr.address_line1 }}</p>
+                {% if cmp_addr.address_line2 %}<p>{{ cmp_addr.address_line2 }}</p>{% endif %}
+                <p>{{ cmp_addr.pincode }} {{ cmp_addr.city }}</p>
+                {% if cmp_addr.country %}<p>{{ cmp_addr.country }}</p>{% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modern Header Styles */
+.modern-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+    padding: 40px 50px;
+    margin: 0;
+    border-radius: 0;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.invoice-title {
+    font-size: 48px;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    letter-spacing: 2px;
+}
+
+.company-tagline {
+    font-size: 16px;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.header-right {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    text-align: right;
+}
+
+.company-logo {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.company-logo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.logo-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.company-info-header {
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.company-info-header p {
+    margin: 3px 0;
+}
+
+.company-name-header {
+    font-size: 13px !important;
+    margin-bottom: 8px !important;
+}
+
+@media print {
+    .modern-header {
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .modern-header * {
+        color: white !important;
+    }
+    
+    .header-content {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+</style>
+

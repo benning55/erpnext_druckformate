@@ -1,0 +1,743 @@
+{% set company = frappe.get_doc("Company", doc.company) %}
+{% set cmp_addr = frappe.get_doc("Address", doc.company_address) if doc.company_address else None %}
+{% set pay_addr = frappe.get_doc("Address", doc.customer_address) if doc.customer_address else None %}
+{% if doc.contact_person %}
+    {% set contact = frappe.get_doc("Contact", doc.contact_person) %}
+{% endif %}
+
+<!-- Embedded Modern Invoice Styles -->
+<style>
+/* Remove ALL padding and margins from everywhere */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+body {
+    background: white !important;
+}
+
+.print-format {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 10pt;
+    max-width: none !important;
+    min-height: auto !important;
+    border-radius: 0 !important;
+    background-color: white !important;
+    width: 100% !important;
+}
+
+/* Override any container padding */
+.print-format-gutter {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.page-break-after, .page-break-before {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Override ERPNext print containers */
+.page-container, .page, .print-preview-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+/* Remove any default document margins */
+.document-container {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.modern-invoice-wrapper {
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: white;
+    color: #333;
+    font-size: 10pt;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Section */
+.invoice-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+    color: white !important;
+    margin-bottom: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.invoice-header * {
+    color: white !important;
+}
+
+/* Content Area with Consistent Padding */
+#content-area {
+    flex: 1;
+    padding: 20px 50px 40px 50px;
+    position: relative;
+}
+
+/* Contact Row - German Style */
+.contact-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 30px;
+}
+
+#address {
+    flex: 1;
+    min-width: 50%;
+}
+
+#sender {
+    font-size: 8pt;
+    color: #64748b;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#contact {
+    flex: 0 0 auto;
+    min-width: 200px;
+}
+
+#contact table {
+    width: 100%;
+    font-size: 9pt;
+}
+
+#contact td {
+    padding: 3px 5px;
+}
+
+/* DIN Marks - German Standard */
+.din-mark {
+    position: fixed;
+    left: 0;
+    width: 5mm;
+    height: 1px;
+    background-color: #3b82f6;
+    z-index: 1000;
+}
+
+#faltmarke-1 {
+    top: 87mm;
+}
+
+#lochmarke {
+    top: 148.5mm;
+}
+
+#faltmarke-2 {
+    top: 192mm;
+}
+
+/* Subject Section */
+#subject {
+    margin: 30px 0 20px 0;
+}
+
+#subject p {
+    margin: 5px 0;
+}
+
+#subject strong {
+    color: #1e3a8a;
+    font-size: 12pt;
+}
+
+/* Page Break Support */
+.page-break {
+    page-break-after: always;
+    break-after: page;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.items-page {
+    page-break-inside: avoid;
+}
+
+/* Add spacing after page breaks for continuation pages */
+.page-break + * {
+    padding-top: 30px;
+}
+
+/* Alternatively, ensure elements following page breaks have top margin */
+.timesheets {
+    margin-top: 30px;
+}
+
+/* Items Table - Modern styling with German structure */
+table.w-100 {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+table.text-small {
+    font-size: 9pt;
+}
+
+.black-border {
+    border-top: 2px solid #1e3a8a;
+    border-bottom: 2px solid #1e3a8a;
+}
+
+table thead {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    display: table-header-group;
+}
+
+table thead th {
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+    color: white !important;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+table tbody td {
+    padding: 8px 10px;
+}
+
+table tfoot {
+    border-top: 2px solid #1e3a8a;
+    display: table-footer-group;
+}
+
+table tfoot td {
+    padding: 8px 10px;
+}
+
+/* Prevent page breaks inside rows */
+table tbody tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-small {
+    font-size: 9pt;
+}
+
+/* Footer */
+#footer-html {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+    color: white !important;
+    padding: 20px 50px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin-top: auto;
+}
+
+#footer-html * {
+    color: white !important;
+}
+
+.letter-head-footer {
+    text-align: center;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.page-number {
+    margin: 5px 0 10px 0;
+    font-size: 10pt;
+    font-weight: 600;
+}
+
+.print-format-footer {
+    margin-top: 10px;
+}
+
+.visible-pdf {
+    display: block;
+}
+
+/* Print Styles - Force Colors and Remove Margins */
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+    
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .print-format {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        box-shadow: none !important;
+    }
+    
+    .modern-invoice-wrapper {
+        min-height: 100vh;
+        display: block;
+    }
+    
+    #content-area {
+        flex: 1;
+    }
+    
+    #footer-html {
+        margin-top: auto;
+    }
+    
+    /* Repeat table headers on each page */
+    table thead {
+        display: table-header-group;
+    }
+    
+    table tfoot {
+        display: table-footer-group;
+    }
+    
+    /* Page break handling */
+    .page-break {
+        page-break-after: always;
+        break-after: page;
+    }
+    
+    .page-break + * {
+        padding-top: 30px;
+    }
+    
+    .timesheets {
+        margin-top: 30px;
+    }
+    
+    table tbody tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    .invoice-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .invoice-header * {
+        color: white !important;
+    }
+    
+    table thead {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    table thead th {
+        color: white !important;
+    }
+    
+    #footer-html {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    #footer-html * {
+        color: white !important;
+    }
+    
+    .page-number {
+        display: block !important;
+        font-weight: 600 !important;
+    }
+    
+    .page-number strong {
+        color: white !important;
+    }
+}
+
+@page {
+    size: A4;
+    margin: 0mm !important;
+    padding: 0mm !important;
+}
+
+/* Position footer at absolute bottom of page for print */
+@media print {
+    .modern-invoice-wrapper {
+        position: relative;
+        min-height: 297mm; /* A4 height */
+    }
+    
+    #footer-html {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+}
+</style>
+
+<!-- Modern Invoice Content with German Structure -->
+<div class="modern-invoice-wrapper">
+    
+    <!-- Header with Modern Styling -->
+    <div id="header">
+        <div class="invoice-header">
+            {{ letter_head }}
+        </div>
+    </div>
+
+    <!-- Content Area with Consistent Padding -->
+    <div id="content-area">
+        
+        <!-- Contact Row - German Style -->
+        <div class="contact-row">
+        <div id="address">
+            {{ doc.customer_name }}<br />
+            {% if contact %}
+                    {%- if contact.salutation -%}
+                        {{ contact.salutation }}
+                    {%- endif %}
+                    {%- if contact.salutation in ["Hr.", "Herr"] %}n{% endif %}
+                    {{ contact.first_name }} {{ contact.last_name }}<br>
+            {% endif %}
+            {{ doc.address_display or "" }}
+        </div>
+
+        <div id="contact">
+            <table class="w-100 text-small">
+                {% if company.phone_no %}
+                <tr>
+                    <td>{{ _("Phone") }}:</td>
+                    <td class="text-right">{{ company.phone_no }}</td>
+                </tr>
+                {% endif %}
+
+                {% if company.email %}
+                <tr>
+                    <td>{{ _("Email") }}:</td>
+                    <td class="text-right">{{ company.email }}</td>
+                </tr>
+                {% endif %}
+
+                <tr>
+                    <td>{{ _("Date") }}:</td>
+                    <td class="text-right">{{ frappe.utils.formatdate(doc.posting_date, "long") }}</td>
+                </tr>
+
+                {% if not doc.is_return %}
+                <tr>
+                    <td>{{ _("Payment Due Date") }}:</td>
+                    <td class="text-right">{{ frappe.utils.formatdate(doc.due_date, "long") }}</td>
+                </tr>
+                {% endif %}
+
+                {% if doc.po_no %}
+                <tr>
+                    <td>{{ _("Your PO No.") }}:</td>
+                    <td class="text-right">{{ doc.po_no }}</td>
+                </tr>
+                {% endif %}
+
+                {% if doc.tax_id %}
+                <tr>
+                    <td>{{ _("Your Tax ID") }}:</td>
+                    <td class="text-right">{{ doc.tax_id }}</td>
+                </tr>
+                {% endif %}
+
+                {% if doc.from_date and doc.to_date %}
+                <tr>
+                    <td>{{ _("Performance Period") }}:</td>
+                    {# If the year matches (first 4 chars in ISO-string), omit it for from_date #}
+                    {% if doc.from_date.year is defined %}
+                        {% set date_format = "dd.mm." if doc.from_date.year == doc.to_date.year else "dd.mm.yy" %}
+                    {% else %}
+                        {% set date_format = "dd.mm." if doc.from_date[:4] == doc.to_date[:4] else "dd.mm.yy" %}
+                    {% endif %}
+                    <td class="text-right">{{ frappe.utils.formatdate(doc.from_date, date_format) }} - {{ frappe.utils.formatdate(doc.to_date, "dd.mm.yyyy") }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div id="text">
+        <div id="subject">
+            {% if doc.is_return %}
+                <p><strong>{{ _("Correction Invoice") }} {{ doc.name }}</strong></p>
+                <p class="text-small">{{ _("Rectifies invoice {0}").format(doc.return_against) }}</p>
+            {% elif doc.amended_from %}
+                <p><strong>{{ _("Cancellation Invoice") }} {{ doc.name }}</strong></p>
+                <p class="text-small">{{ _("Fully cancels and replaces invoice {0}").format(doc.amended_from) }}</p>
+            {% else %}
+                <p><strong>{{ _("Invoice") }} {{ doc.name }}</strong></p>
+            {% endif %}
+        </div>
+
+        <!-- Items Table -->
+        <table class="w-100 text-small">
+            <thead class="black-border">
+                <tr>
+                    <th style="width: 5%">{{ _("Sr") }}</th>
+                    <th style="width: 45%">{{ _("Description") }}</th>
+                    <th style="width: 10%">{{ _("Unit") if not print_settings.print_uom_after_quantity else '&nbsp;'}}</th>
+                    <th style="width: 10%">{{ _("Qty") }}</th>
+                    <th style="width: 12%">{{ _("Price") }}</th>
+                    <th style="width: 18%" class="text-right">{{ _("Amount") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in doc.items %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><b>{{ _(n.item_name) }}</b></td>
+                        <td>{{ _(n.uom) if not print_settings.print_uom_after_quantity else '&nbsp;'}}</td>
+                        <td>
+                            {{ n.get_formatted("qty") }}
+                            {% if print_settings.print_uom_after_quantity %}
+                                {{ _(n.uom) }}
+                            {% endif %}
+                        </td>
+                        <td>{{ n.get_formatted("rate") }}</td>
+                        <td class="text-right">{{ n.get_formatted("amount") }}</td>
+                    </tr>
+                    <tr {% if loop.index % 4 == 0 and not loop.last %}style="page-break-after: always;"{% endif %}>
+                        <td></td>
+                        <td colspan="4">{{ n.description }}</td>
+                        <td></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+
+            <tfoot class="black-border">
+                {% if doc.additional_discount_percentage or doc.discount_amount %}
+                    <tr>
+                        <td></td>
+                        <td>{{ _("Total") }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">{{ doc.get_formatted("total") }}</td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>{{ _("Discount") }}</td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            {% if doc.additional_discount_percentage %}
+                                {{ doc.get_formatted("additional_discount_percentage") }} &percnt;
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {{ doc.get_formatted("discount_amount") }}
+                        </td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td></td>
+                    <td>{{ _("Net Total") }}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-right">{{ doc.get_formatted("net_total") }}</td>
+                </tr>
+                {% if doc.tax_category == "Reverse Charge" -%}
+                    <tr>
+                        <td></td>
+                        <td>Steuerschuldnerschaft des Leistungsempfängers / The recipient of the supply is liable for tax</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right"></td>
+                    </tr>
+                {% else %}
+                    {% for tax_row in doc.taxes -%}
+                        {% if tax_row.tax_amount or print_settings.print_taxes_with_zero_amount %}
+                            <tr>
+                                <td></td>
+                                <td>
+                                {{ tax_row.description }}
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-right">
+                                    {{ tax_row.get_formatted("tax_amount") }}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {%- endfor %}
+
+                    {% if doc.tax_exemption_reason %}
+                        <tr>
+                            <td></td>
+                            <td>{{ _(doc.tax_exemption_reason) }}</td>
+                            <td></td>
+                            <td></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    {% endif %}
+                {%- endif %}
+                <tr>
+                    <td></td>
+                    <td>
+                        <strong>{{ _("Grand Total") }}</strong>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-right"><strong>{{ doc.get_formatted("grand_total") }}</strong>
+                    </td>
+                </tr>
+                {% if doc.total_advance %}
+                    <tr>
+                        <td></td>
+                        <td>{{ _("Total Advance") }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">
+                            {{ doc.get_formatted("total_advance") }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>{{ _("Outstanding Amount") }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-right">
+                            {{ doc.get_formatted("outstanding_amount") }}
+                        </td>
+                    </tr>
+                {% endif %}
+            </tfoot>
+        </table>
+
+        {% if doc.terms and (doc.terms | striptags) %}
+            <br>
+            {{ doc.terms }}
+        {% endif %}
+
+        {% if doc.timesheets -%}
+        <div style="page-break-after: always"></div>
+        <div class="timesheets">
+            <p style="padding-top: 1em; padding-bottom: 0.33em">
+                <strong>{{ _("Time Logs") }}</strong>
+            </p>
+            <div data-fieldname="timesheets" data-fieldtype="Table">
+                <table class="w-100 text-small">
+                    <thead class="black-border">
+                        <tr>
+                            <th style="width: 40px" class="table-sr">{{ _("Sr") }}</th>
+                            <th style="width: 80px;" class="" data-fieldname="timesheets" data-fieldtype="Table">
+                                {{_("Date")}}</th>
+                            <th style="width: 370px;" class="" data-fieldname="timesheets" data-fieldtype="Table">
+                                {{_("Note")}}</th>
+                            <th style="width: 80px;" class="text-right" data-fieldname="timesheets" data-fieldtype="Table">
+                                {{_("Duration")}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for time_log in doc.timesheets | sort(attribute="start_date") %}
+                        {% set timesheet = frappe.get_doc("Timesheet", time_log.time_sheet)%}
+                            {% if timesheet.total_billable_amount > 0 %}
+                                <tr style="page-break-inside: avoid;">
+                                    <td class="table-sr">{{ loop.index }}</td>
+                                    <td class="" data-fieldname="timesheets" data-fieldtype="Table">
+                                        <div class="value">
+                                            {{ frappe.utils.formatdate(timesheet.start_date, "dd.mm.yy") }}
+                                        </div>
+                                    </td>
+                                    <td class="" data-fieldname="timesheets" data-fieldtype="Table">
+                                        <div class="value">
+                                            {{ time_log.description }}
+                                        </div>
+                                    </td>
+                                    <td class="text-right" data-fieldname="timesheets" data-fieldtype="Table">
+                                        <div class="value">
+                                            {{
+                                                frappe.format(
+                                                    frappe.utils.rounded(time_log.billing_hours * 60) * 60,
+                                                    {"fieldtype": "Duration"}
+                                                )
+                                            }}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="black-border">
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <strong>
+                                    {{ _("Total Duration") }}
+                                </strong>
+                            </td>
+                            <td class="text-right">
+                                <strong>
+                                    {{ 
+                                        frappe.format(
+                                            frappe.utils.rounded(doc.total_billing_hours * 60) * 60,
+                                            {"fieldtype": "Duration", "hide_days": 1}
+                                        )
+                                    }}
+                                </strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        {%- endif %}
+    </div>
+    
+    </div><!-- End Content Area -->
+
+    <!-- Footer with Modern Styling -->
+    <div id="footer-html" class="visible-pdf">
+        <div class="letter-head-footer">
+            <div class="print-format-footer">
+                {{ footer }}
+            </div>
+        </div>
+    </div>
+
+</div>
+

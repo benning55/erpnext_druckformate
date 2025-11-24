@@ -1,0 +1,90 @@
+{% set company = frappe.get_doc("Company", doc.company) %}
+{% set company_address_name = frappe.db.get_value("Dynamic Link", filters={"link_doctype": "Company", "link_name": doc.company, "parenttype": "Address"}, fieldname="parent") %}
+{% set cmp_addr = frappe.get_doc("Address", company_address_name) if company_address_name else None %}
+
+<!-- Modern Invoice Footer with German Legal Requirements -->
+<div class="modern-footer">
+    <div class="footer-grid">
+        <!-- Column 1: Company Info -->
+        <div class="footer-column">
+            <p class="footer-company-name">{{ company.company_name }}</p>
+            <p>{% if cmp_addr %}{{ cmp_addr.address_line1 }} &#183; {{ cmp_addr.pincode }} {{ cmp_addr.city }}{% endif %}</p>
+            <p>{{ _("Phone") }}: {{ company.phone_no }}</p>
+            <p>{{ _("Email") }}: {{ company.email }}</p>
+            {% if company.website %}<p>{{ company.website }}</p>{% endif %}
+        </div>
+        
+        <!-- Column 2: Legal Info -->
+        <div class="footer-column">
+            <p><strong>{{ _("Managing Directors") }}:</strong></p>
+            <p>Phillip Schwarzrock</p>
+            <p>{{ _("Tax ID") }}: {{ company.tax_id }}</p>
+            <p>Amtsgericht Berlin</p> 
+            <p>{{ _("Trade Register Number") }}: HRB 11235</p> 
+        </div>
+        
+        <!-- Column 3: Bank Details -->
+        <div class="footer-column">
+            <p><strong>{{ _("Bank Details") }}:</strong></p>
+            <p>Deutsche Kreditbank</p> 
+            <p>{{ _("IBAN") }}: DE08 1203 0000 1013 1202 72</p> 
+            <p>{{ _("BIC") }}: BYLADEM1001</p> 
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modern Footer Styles with German Legal Info */
+.modern-footer {
+    color: white;
+    padding: 20px 50px;
+    margin: 0;
+    position: relative;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    font-size: 9pt;
+    line-height: 1.6;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-column p {
+    margin: 2px 0;
+    color: white;
+}
+
+.footer-column strong {
+    font-weight: 600;
+}
+
+.footer-company-name {
+    font-weight: 600;
+    font-size: 10pt;
+    margin-bottom: 5px !important;
+}
+
+@media print {
+    .modern-footer {
+        page-break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .footer-grid {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .footer-column p {
+        color: white !important;
+    }
+}
+</style>
+
