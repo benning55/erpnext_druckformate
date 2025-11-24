@@ -10,10 +10,10 @@
 {% set no_letterhead = 1 %}
 
 <style>
-    /* --------------------------------------------------------
-       GLOBAL RESET & PAGE SETUP
-       -------------------------------------------------------- */
-    * {
+    /* 
+       1. GLOBAL RESET & TYPOGRAPHY 
+    */
+    *, html, body {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
@@ -21,303 +21,422 @@
         print-color-adjust: exact !important;
     }
 
-    html, body {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 9pt;
+        line-height: 1.3;
+        color: #000;
         background: white;
+        width: 100%;
     }
 
+    /* 
+       2. PRINT MEDIA SETTINGS (Chrome Headless) 
+    */
     @media print {
         @page {
-            /* Reduced margins to better fit the content */
-            size: A4;
-            margin: 5mm; 
+            size: A4 portrait;
+            margin: 0; /* Full bleed for header/footer */
         }
         
         body {
-            width: 100%;
+            width: 210mm; /* A4 width */
         }
 
-        /* Hide ERPNext defaults */
-        .print-heading, .letter-head, .footer, #header-html, #footer-html {
+        /* Hide standard Frappe/ERPNext elements */
+        .print-heading, .letter-head, .footer, #header-html, #footer-html, .page-break {
             display: none !important;
         }
         
-        /* Force background colors */
-        * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+        .print-format {
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: 0 !important; 
+            height: auto !important;
         }
+
+        /* Repeat headers/footers in table */
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
         
-        .footer-blue-bar {
-            background-color: #003d7a !important;
-            color: white !important;
-        }
-        
-        .footer-blue-bar * {
-            color: white !important;
-        }
+        /* Prevent breaks inside elements */
+        tr { page-break-inside: avoid; }
+        .address-row, .summary-section { page-break-inside: avoid; }
     }
 
-    /* --------------------------------------------------------
-       MAIN LAYOUT TABLE
-       -------------------------------------------------------- */
-    .layout-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
+    /* 
+       3. VISUAL ELEMENTS (Fixed Position) 
+    */
+    :root {
+        --primary-blue: #00457f;
+        --separator-red: #c00000;
+        --text-grey: #666;
     }
 
-    .layout-table thead {
-        display: table-header-group;
-    }
-
-    .layout-table tfoot {
-        display: table-footer-group;
-    }
-
-    /* Ensure rows don't break awkwardly */
-    .layout-table tr {
-        page-break-inside: avoid;
-    }
-
-    .layout-table td {
-        vertical-align: top;
-    }
-
-    /* --------------------------------------------------------
-       HEADER CONTENT
-       -------------------------------------------------------- */
-    .header-content {
-        height: 35mm;
-        background-color: #003d7a;
+    /* Header Visual */
+    .header-fixed {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background-color: var(--primary-blue);
+        border-bottom: 2px solid var(--separator-red);
+        z-index: 1000;
         display: flex;
         justify-content: flex-end;
         align-items: center;
-        padding: 0 10mm; /* Inner padding matches visual design */
-        margin-bottom: 10mm; /* Space before body content */
-    }
-
-    .header-logo-container {
-        background-color: white;
-        padding: 3mm;
-        border-radius: 2px;
-        margin-top: 5mm;
+        padding: 0 12mm;
     }
 
     .header-logo {
-        height: 20mm;
+        height: 35px;
         width: auto;
-        display: block;
+        background: white; 
+        padding: 2px;
     }
 
-    /* --------------------------------------------------------
-       BODY CONTENT
-       -------------------------------------------------------- */
-    .content-wrapper {
-        padding: 0 10mm; /* Match header/footer alignment */
+    /* Footer Visual */
+    .footer-fixed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 35mm;
+        background: white;
+        z-index: 1000;
     }
 
-    .address-area {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10mm;
-        align-items: flex-start;
-    }
-
-    .address-left { width: 45%; }
-    .address-right { width: 50%; }
-
-    .sender-line {
-        font-size: 7pt;
-        text-decoration: underline;
-        margin-bottom: 3mm;
-        color: #000;
-    }
-
-    .address-block {
-        margin-bottom: 5mm;
-        line-height: 1.4;
-        font-size: 10pt;
-    }
-
-    .doc-info-header {
-        background-color: #e6e6e6;
-        padding: 2mm 3mm;
-        display: flex;
-        justify-content: space-between;
-        font-weight: bold;
-        font-size: 11pt;
-        margin-bottom: 3mm;
-    }
-
-    .doc-info-table {
-        width: 100%;
-        font-size: 9pt;
-        border-collapse: collapse;
-    }
-    .doc-info-table td { padding: 1.5mm 0; }
-    .doc-info-table td:last-child { text-align: right; font-weight: bold; }
-
-    .payment-note {
-        margin-top: 4mm;
-        border-top: 1px solid black;
-        border-bottom: 1px solid black;
-        padding: 2mm;
+    .page-number-container {
         text-align: center;
-        font-weight: bold;
-        font-size: 9pt;
-    }
-
-    /* Items Table */
-    .items-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 5mm;
-        font-size: 9pt;
-    }
-
-    .items-table thead {
-        display: table-header-group;
-    }
-
-    .items-table thead th {
-        border-top: 1px solid black;
-        border-bottom: 1px solid black;
-        padding: 2mm 1mm;
-        text-align: left;
-        background-color: white;
-    }
-
-    .items-table tbody td {
-        padding: 2mm 1mm;
-        border-bottom: 1px solid #eee;
-        vertical-align: top;
+        font-size: 8pt;
+        height: 5mm;
+        line-height: 5mm;
     }
     
-    .items-table tr {
-        page-break-inside: avoid;
-    }
-
-    .text-right { text-align: right; }
-
-    /* Totals */
-    .totals-area {
-        margin-top: 5mm;
-        display: flex;
-        justify-content: flex-end;
-        page-break-inside: avoid;
-    }
-
-    .totals-table {
-        width: 50%;
-        border-collapse: collapse;
-        font-size: 10pt;
-    }
-    .totals-table td { padding: 2mm 0; }
-    .totals-table tr.grand-total td {
-        border-top: 1px solid black;
-        border-bottom: 2px solid black;
-        font-weight: bold;
-        padding-top: 2mm;
-    }
-
-    /* --------------------------------------------------------
-       FOOTER CONTENT
-       -------------------------------------------------------- */
-    .footer-content {
-        margin-top: 10mm; /* Space above footer */
-    }
-
-    .page-number {
-        text-align: right;
-        font-size: 9pt;
-        margin-bottom: 2mm;
-        padding-right: 10mm;
+    /* CSS Counter for Page Numbers */
+    .page-number::after {
+        content: counter(page);
     }
 
     .footer-blue-bar {
-        background-color: #003d7a !important;
-        color: white !important;
-        padding: 5mm 10mm; /* Inner padding matches header */
-        font-size: 8pt;
+        background-color: var(--primary-blue);
+        border-top: 2px solid var(--separator-red);
+        color: white;
+        padding: 4mm 12mm;
+        height: 30mm;
+        font-size: 7.5pt;
         display: flex;
         justify-content: space-between;
-        min-height: 35mm;
-        -webkit-print-color-adjust: exact; 
-        print-color-adjust: exact;
     }
 
-    .footer-col { width: 32%; }
-    .footer-col strong {
-        display: block;
-        margin-bottom: 2mm;
-        font-size: 9pt;
-        border-bottom: 1px solid rgba(255,255,255,0.3);
-        padding-bottom: 1mm;
-        color: white !important;
+    .footer-col {
+        width: 32%;
     }
-    .footer-col p { margin: 0.5mm 0; line-height: 1.3; color: white !important; }
+    .footer-col p { margin-bottom: 1px; }
+    .footer-col strong { display: block; margin-bottom: 2px; font-weight: bold; }
+
+    /* 
+       4. SPACERS (To reserve space on every page) 
+    */
+    .header-spacer {
+        height: 50px; /* Must match .header-fixed height */
+        /* Margin to push content down on every page */
+        margin-bottom: 1rem;
+    }
+
+    .footer-spacer {
+        height: 35mm; /* Must match .footer-fixed height */
+    }
+
+    /* 
+       5. CONTENT LAYOUT 
+    */
+    .main-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .main-table td {
+        padding: 0;
+        vertical-align: top;
+    }
+
+    .content-inner {
+        padding: 0 12mm; /* Left/Right margins for text */
+        width: 100%;
+    }
+
+    /* Top Address Section */
+    .top-address-line {
+        font-size: 7pt;
+        color: var(--text-grey);
+        margin-bottom: 5mm;
+    }
+
+    .address-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10mm;
+    }
+
+    .col-left { width: 55%; padding-right: 5mm; }
+    .col-right { width: 45%; }
+
+    .address-block {
+        margin-bottom: 5mm;
+        font-size: 10pt;
+    }
+    .address-label { font-weight: bold; display: block; margin-bottom: 1mm; font-size: 9pt; }
+
+    /* Info Box (Right Side) */
+    .info-box-header {
+        background-color: #eee;
+        padding: 2mm 3mm;
+        font-weight: bold;
+        font-size: 11pt;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2mm;
+    }
+
+    .info-table {
+        width: 100%;
+        font-size: 9pt;
+        border-collapse: collapse;
+    }
+    .info-table td {
+        padding: 1mm 0;
+        vertical-align: top;
+    }
+    .info-table td:first-child { width: 50%; }
+    .info-table td:last-child { text-align: right; font-weight: bold; }
+
+    .payment-note {
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+        text-align: center;
+        padding: 2mm;
+        font-weight: bold;
+        margin-top: 4mm;
+    }
+
+    /* Delivery Note Line */
+    .delivery-line {
+        text-align: center;
+        font-weight: bold;
+        margin: 5mm 0;
+    }
+
+    /* 
+       6. ITEMS TABLE 
+    */
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 5mm;
+        font-size: 9pt;
+    }
+
+    .items-table thead th {
+        border-top: 2px solid #000;
+        border-bottom: 2px solid #000;
+        padding: 2mm 1mm;
+        text-align: left;
+        font-weight: bold;
+        background: white; /* Prevent transparent header issue */
+    }
+
+    /* Column Alignment */
+    .th-right, .td-right { text-align: right; }
+    .th-center, .td-center { text-align: center; }
+    
+    .items-table tbody td {
+        padding: 2mm 1mm;
+        border-bottom: 1px solid #ddd; /* Light separator */
+        vertical-align: top;
+    }
+
+    .item-code { font-weight: bold; display: block; }
+    .item-desc { display: block; margin-top: 1mm; color: #333; }
+
+    /* 
+       7. TOTALS SECTION 
+    */
+    .summary-section {
+        margin-top: 10mm;
+    }
+
+    .totals-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .totals-header-row {
+        display: flex;
+        border-bottom: 1px solid #000;
+        font-weight: bold;
+        padding-bottom: 1mm;
+        margin-bottom: 1mm;
+        width: 100%;
+        justify-content: flex-end;
+        gap: 5mm;
+    }
+
+    .totals-value-row {
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+        gap: 5mm;
+        margin-bottom: 3mm;
+    }
+
+    .total-col {
+        width: 25mm;
+        text-align: right;
+    }
+
+    .grand-total-label {
+        text-align: center;
+        font-weight: bold;
+        margin-top: 3mm;
+        font-size: 10pt;
+    }
+    
+    .grand-total-value {
+        text-align: center;
+        font-weight: bold;
+        font-size: 11pt;
+        margin-top: 1mm;
+    }
+
+    /* 
+       8. CLOSING TEXT 
+    */
+    .closing-text {
+        margin-top: 10mm;
+        font-size: 8pt;
+        color: #444;
+    }
+    .thanks-text {
+        margin-top: 5mm;
+        font-size: 10pt;
+    }
 
 </style>
 
-<table class="layout-table">
+<!-- FIXED HEADER (Visual Only) -->
+<div class="header-fixed">
+    <div class="header-content" style="width: 100%; display: flex; justify-content: flex-end; align-items: center; height: 100%;">
+        <img src="/files/TMONITLogo.png" class="header-logo" alt="Logo">
+    </div>
+</div>
+
+<!-- FIXED FOOTER (Visual Only) -->
+<div class="footer-fixed">
+    <div class="page-number-container">
+        – {{ _("Page") }} <span class="page-number"></span> –
+    </div>
+    <div class="footer-blue-bar">
+        <div class="footer-col">
+            <strong>TMONIT</strong>
+            <p>Hauptstraße 123</p>
+            <p>10115 Berlin</p>
+            <p>{{ _("Tel") }}: +49 30 12345678</p>
+            <p>{{ _("Email") }}: info@tmonit.com</p>
+            <p>{{ _("Web") }}: www.tmonit.com</p>
+        </div>
+        <div class="footer-col">
+            <strong>{{ _("Legal Information") }}</strong>
+            <p>{{ _("VAT ID") }}: DE123456789</p>
+            <p>{{ _("Commercial Register") }}: HRB 12345</p>
+            <p>{{ _("Court of Registration") }}: Berlin</p>
+            <p>{{ _("Managing Director") }}: Max Mustermann</p>
+        </div>
+        <div class="footer-col">
+            <strong>{{ _("Bank Details") }}</strong>
+            <p>Deutsche Bank</p>
+            <p>{{ _("IBAN") }}: DE89 1234 5678 9012 3456 78</p>
+            <p>{{ _("BIC") }}: DEUTDEFF</p>
+            <div style="margin-top: 2mm; width: 10mm; height: 10mm; border: 1px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5pt;">
+                ISO
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN LAYOUT TABLE (Handles Spacing per Page) -->
+<table class="main-table">
+    <!-- HEADER SPACER: Reserves space at top of EVERY page -->
     <thead>
         <tr>
             <td>
-                <div class="header-content">
-                    <div class="header-logo-container">
-                        <img src="/files/TMONITLogo.png" class="header-logo" alt="Logo">
-                    </div>
-                </div>
+                <div class="header-spacer"></div>
             </td>
         </tr>
     </thead>
 
+    <!-- FOOTER SPACER: Reserves space at bottom of EVERY page -->
+    <tfoot>
+        <tr>
+            <td>
+                <div class="footer-spacer"></div>
+            </td>
+        </tr>
+    </tfoot>
+
+    <!-- CONTENT BODY -->
     <tbody>
         <tr>
             <td>
-                <div class="content-wrapper">
-                    <!-- Address Row -->
-                    <div class="address-area">
-                        <div class="address-left">
-                            <div class="sender-line">TMONIT - Hauptstraße 123 - 10115 Berlin</div>
+                <div class="content-inner">
+                    
+                    <!-- 1. TOP META LINE -->
+                    <div class="top-address-line">
+                        TMONIT • Hauptstraße 123 • 10115 Berlin
+                    </div>
+
+                    <!-- 2. TWO COLUMN INFO BLOCK -->
+                    <div class="address-row">
+                        <!-- LEFT: ADDRESSES -->
+                        <div class="col-left">
                             <div class="address-block">
-                                <div style="font-weight: bold; margin-bottom: 2mm;">{{ _("Invoice Address") }}</div>
+                                <span class="address-label">{{ _("Billing Address") }}:</span>
                                 <strong>{{ doc.supplier }}</strong><br>
                                 {% if contact %}
                                     {{ contact.first_name }} {{ contact.last_name }}<br>
                                 {% endif %}
                                 {{ doc.address_display or "" }}
                             </div>
-                            
-                            {% if doc.shipping_address_display %}
-                            <div class="address-block" style="margin-top: 5mm;">
-                                <div style="font-weight: bold; margin-bottom: 2mm;">{{ _("Shipping Address") }}</div>
+
+                            {% if doc.shipping_address_name %}
+                            <div class="address-block">
+                                <span class="address-label">{{ _("Shipping Address") }}:</span>
                                 {{ doc.shipping_address_display }}
                             </div>
                             {% endif %}
                         </div>
-                        
-                        <div class="address-right">
-                            <div class="doc-info-header">
+
+                        <!-- RIGHT: INFO BAR & TABLE -->
+                        <div class="col-right">
+                            <div class="info-box-header">
                                 <span>{{ _("Purchase Order") }}</span>
-                                <span>{{ frappe.utils.formatdate(doc.transaction_date, "dd.MM.yyyy") }}</span>
+                                <span>Berlin, {{ frappe.utils.formatdate(doc.transaction_date, "dd.MM.yyyy") }}</span>
                             </div>
-                            
-                            <table class="doc-info-table">
+
+                            <table class="info-table">
                                 <tr>
-                                    <td>{{ _("PO Number") }}:</td>
+                                    <td>{{ _("Order No.") }}:</td>
                                     <td>{{ doc.name }}</td>
                                 </tr>
                                 <tr>
-                                    <td>{{ _("Customer No.") }}:</td>
+                                    <td>{{ _("Supplier No.") }}:</td>
                                     <td>{{ doc.supplier or "-" }}</td>
                                 </tr>
                                 <tr>
-                                    <td>{{ _("Contact Person") }}:</td>
+                                    <td>{{ _("Your Contact") }}:</td>
                                     <td>
                                         {% if contact %}
                                             {{ contact.first_name }} {{ contact.last_name }}
@@ -326,34 +445,49 @@
                                         {% endif %}
                                     </td>
                                 </tr>
-                                {% if doc.schedule_date %}
+                                {% if doc.supplier_reference %}
                                 <tr>
-                                    <td>{{ _("Delivery Date") }}:</td>
-                                    <td>{{ frappe.utils.formatdate(doc.schedule_date, "dd.MM.yyyy") }}</td>
+                                    <td>{{ _("Your Reference") }}:</td>
+                                    <td>{{ doc.supplier_reference }}</td>
                                 </tr>
                                 {% endif %}
+                                {% if doc.tax_id %}
+                                <tr>
+                                    <td>{{ _("Your VAT ID") }}:</td>
+                                    <td>{{ doc.tax_id }}</td>
+                                </tr>
+                                {% endif %}
+                                <tr>
+                                    <td>{{ _("Shipping Method") }}:</td>
+                                    <td>{{ doc.shipping_method or "Standard" }}</td>
+                                </tr>
                                 <tr>
                                     <td>{{ _("Payment Terms") }}:</td>
                                     <td>{{ doc.payment_terms_template or "Standard" }}</td>
                                 </tr>
                             </table>
-                            
+
                             <div class="payment-note">
-                                {{ _("Payment in advance on order") }}
+                                {{ _("Payment in advance upon order placement") }}
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Items Table -->
+
+                    <!-- 3. DELIVERY NOTE LINE -->
+                    <div class="delivery-line">
+                        {{ _("Delivery according to order") }}
+                    </div>
+
+                    <!-- 4. ITEMS TABLE -->
                     <table class="items-table">
                         <thead>
                             <tr>
                                 <th style="width: 5%;">{{ _("Pos.") }}</th>
-                                <th style="width: 50%;">{{ _("Description") }}</th>
-                                <th style="width: 10%;">{{ _("Qty") }}</th>
-                                <th style="width: 10%;">{{ _("Unit") }}</th>
-                                <th style="width: 12%;" class="text-right">{{ _("Price") }}</th>
-                                <th style="width: 13%;" class="text-right">{{ _("Total") }}</th>
+                                <th style="width: 45%;">{{ _("Description") }}</th>
+                                <th style="width: 10%;" class="th-right">{{ _("Qty") }}</th>
+                                <th style="width: 10%;" class="th-center">{{ _("Unit") }}</th>
+                                <th style="width: 15%;" class="th-right">{{ _("Unit Price") }} €</th>
+                                <th style="width: 15%;" class="th-right">{{ _("Total Price") }} €</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -361,86 +495,74 @@
                             <tr>
                                 <td>{{ loop.index }}.</td>
                                 <td>
-                                    <strong>{{ item.item_code }}</strong>
-                                    {% if item.item_name != item.item_code %}<br>{{ item.item_name }}{% endif %}
-                                    {% if item.description %}
-                                    <div style="font-size: 8.5pt; color: #555; margin-top: 1mm;">
-                                        {{ item.description }}
-                                    </div>
+                                    <span class="item-code">{{ item.item_code }}</span>
+                                    <span class="item-desc">{{ item.item_name }}</span>
+                                    {% if item.description and item.description != item.item_name %}
+                                        <div style="font-size: 8.5pt; color: #666; margin-top: 2px; white-space: pre-wrap;">{{ item.description }}</div>
                                     {% endif %}
                                 </td>
-                                <td>{{ item.get_formatted("qty") }}</td>
-                                <td>{{ item.uom }}</td>
-                                <td class="text-right">{{ item.get_formatted("rate") }}</td>
-                                <td class="text-right">{{ item.get_formatted("amount") }}</td>
+                                <td class="td-right">{{ item.get_formatted("qty") }}</td>
+                                <td class="td-center">{{ item.uom }}</td>
+                                <td class="td-right">{{ item.get_formatted("rate") }}</td>
+                                <td class="td-right">{{ item.get_formatted("amount") }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-                    
-                    <!-- Totals -->
-                    <div class="totals-area">
-                        <table class="totals-table">
-                            <tr>
-                                <td>{{ _("Net Total") }}</td>
-                                <td class="text-right">{{ doc.get_formatted("net_total") }}</td>
-                            </tr>
-                            {% for tax in doc.taxes %}
-                            {% if tax.tax_amount %}
-                            <tr>
-                                <td>{{ tax.description }}</td>
-                                <td class="text-right">{{ tax.get_formatted("tax_amount") }}</td>
-                            </tr>
-                            {% endif %}
-                            {% endfor %}
-                            <tr class="grand-total">
-                                <td>{{ _("Total Amount") }}</td>
-                                <td class="text-right">{{ doc.get_formatted("grand_total") }}</td>
-                            </tr>
-                        </table>
+
+                    <!-- 5. SUMMARY & TOTALS SECTION -->
+                    <div class="summary-section">
+                        <!-- Summary Header Block -->
+                        <div style="border-bottom: 1px solid #000; margin-bottom: 5mm; padding-bottom: 2mm;">
+                            <div style="display: flex; justify-content: space-between; font-size: 9pt; color: #666;">
+                                <span>{{ _("Billing Address") }}: {{ doc.supplier }}</span>
+                                <span>{{ _("Shipping Address") }}: {{ doc.shipping_address_name or doc.supplier }}</span>
+                            </div>
+                        </div>
+
+                        <div style="text-align: right; margin-bottom: 5mm; font-weight: bold;">
+                            {{ _("Total (Net)") }}: {{ doc.get_formatted("net_total") }}
+                        </div>
+
+                        <!-- Tax Breakdown -->
+                        <div class="totals-grid">
+                            <div class="totals-header-row">
+                                <div class="total-col">{{ _("Net") }} (€)</div>
+                                <div class="total-col">{{ _("VAT") }} %</div>
+                                <div class="total-col">{{ _("VAT Amt") }}</div>
+                                <div class="total-col">{{ _("Gross") }} (€)</div>
+                            </div>
+
+                            <div class="totals-value-row">
+                                <div class="total-col">{{ doc.get_formatted("net_total") }}</div>
+                                <div class="total-col">
+                                    {% if doc.taxes and doc.taxes[0] %}
+                                        {{ doc.taxes[0].rate }} %
+                                    {% else %}
+                                        0 %
+                                    {% endif %}
+                                </div>
+                                <div class="total-col">{{ doc.get_formatted("total_taxes_and_charges") }}</div>
+                                <div class="total-col">{{ doc.get_formatted("grand_total") }}</div>
+                            </div>
+                        </div>
+
+                        <div class="grand-total-label">{{ _("Invoice Amount") }}</div>
+                        <div class="grand-total-value">{{ doc.get_formatted("grand_total") }}</div>
                     </div>
-                    
-                    {% if doc.terms %}
-                    <div style="margin-top: 10mm; font-size: 9pt;">
-                        <strong>{{ _("Terms and Conditions") }}:</strong><br>
-                        {{ doc.terms }}
+
+                    <!-- 6. CLOSING -->
+                    <div class="closing-text">
+                        <p>{{ _("The goods remain the property of the supplier until full payment.") }}</p>
+                        <p>{{ _("Our general terms and conditions apply, viewable at") }} www.tmonit.com/agb.</p>
                     </div>
-                    {% endif %}
+
+                    <div class="thanks-text">
+                        {{ _("Thank you for your order.") }}
+                    </div>
+
                 </div>
             </td>
         </tr>
     </tbody>
-
-    <tfoot>
-        <tr>
-            <td>
-                <div class="footer-content">
-                    <div class="page-number">
-                        - Seite 1 von 1 -
-                    </div>
-                    <div class="footer-blue-bar">
-                        <div class="footer-col">
-                            <strong>TMONIT</strong>
-                            <p>Hauptstraße 123</p>
-                            <p>10115 Berlin</p>
-                            <p>Tel: +49 30 12345678</p>
-                            <p>Email: info@tmonit.com</p>
-                        </div>
-                        <div class="footer-col">
-                            <strong>{{ _("Legal Info") }}</strong>
-                            <p>{{ _("Tax ID") }}: DE123456789</p>
-                            <p>{{ _("Reg. No.") }}: HRB 12345</p>
-                            <p>Amtsgericht Berlin</p>
-                        </div>
-                        <div class="footer-col">
-                            <strong>{{ _("Bank Details") }}</strong>
-                            <p>Deutsche Bank</p>
-                            <p>IBAN: DE89 1234 5678 9012 3456 78</p>
-                            <p>BIC: DEUTDEFF</p>
-                        </div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </tfoot>
 </table>
