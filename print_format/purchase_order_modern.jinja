@@ -143,7 +143,10 @@
     .top-address-line {
         font-size: 7pt;
         color: var(--text-grey);
-        margin-bottom: 5mm;
+        margin-bottom: 2mm;
+        margin-left: 8mm; /* Align to 20mm total left margin */
+        margin-top: 10mm; /* Push down to start at ~27mm from top */
+        width: 85mm;
     }
 
     .address-row {
@@ -153,8 +156,15 @@
         margin-bottom: 10mm;
     }
 
-    .col-left { width: 55%; padding-right: 5mm; }
-    .col-right { width: 45%; }
+    .col-left { 
+        width: 85mm; 
+        margin-left: 8mm; /* Align to 20mm total left margin */
+        flex-shrink: 0; 
+    }
+    .col-right { 
+        flex-grow: 1;
+        padding-left: 10mm;
+    }
 
     .address-block {
         margin-bottom: 5mm;
@@ -297,23 +307,29 @@
     </div>
     <div class="footer-blue-bar">
         <div class="footer-col">
-            <strong>{{ _("Address") }}</strong>
-            <p>Tmonit UG</p>
-            <p>Birkenstraße 69</p>
-            <p>10559 Berlin</p>
-            <p>DE365570629</p>
+            <div>
+                <strong>{{ _("Address") }}</strong>
+                <p>Tmonit UG</p>
+                <p>Birkenstraße 69</p>
+                <p>10559 Berlin</p>
+                <p>DE365570629</p>
+            </div>
         </div>
-        <div class="footer-col">
-            <strong>{{ _("Bank Connection") }}</strong>
-            <p>Postbank Berlin</p>
-            <p>DE37 1007 0397 0075 0620 00</p>
-            <p>PBNKDEFFXXX</p>
+        <div class="footer-col" style="display: flex; justify-content: center;">
+            <div>
+                <strong>{{ _("Bank Connection") }}</strong>
+                <p>Postbank Berlin</p>
+                <p>DE37 1007 0397 0075 0620 00</p>
+                <p>PBNKDEFFXXX</p>
+            </div>
         </div>
-        <div class="footer-col">
-            <strong>{{ _("Contact") }}</strong>
-            <p>+49 30 48810374</p>
-            <p>info@t-monit.de</p>
-            <p>www.t-monit.de</p>
+        <div class="footer-col" style="display: flex; justify-content: flex-end;">
+            <div>
+                <strong>{{ _("Contact") }}</strong>
+                <p>+49 30 48810374</p>
+                <p>info@t-monit.de</p>
+                <p>www.t-monit.de</p>
+            </div>
         </div>
     </div>
 </div>
