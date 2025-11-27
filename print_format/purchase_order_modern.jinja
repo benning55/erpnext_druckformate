@@ -153,7 +153,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 10mm;
+        margin-bottom: 5mm; /* Reduced from 10mm */
     }
 
     .col-left { 
@@ -230,7 +230,7 @@
     .th-center, .td-center { text-align: center !important; }
     
     .items-table tbody td {
-        padding: 2mm 1mm;
+        padding: 1.5mm 1mm;
         border-bottom: 1px solid #ddd; /* Light separator */
         vertical-align: top;
     }
@@ -302,9 +302,6 @@
 </div>
 
 <div class="footer-fixed">
-    <div class="page-number-container">
-        – {{ _("Page") }} <span class="page-number"></span> –
-    </div>
     <div class="footer-blue-bar">
         <div class="footer-col">
             <div>
@@ -464,7 +461,42 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% set page = namespace(current=1) %}
+                            {% set total_items = doc.items|length %}
+                            
                             {% for item in doc.items %}
+                            
+                            {# Logic: Only apply breaks if we have > 6 items #}
+                            {% if total_items > 5 %}
+                                {% if loop.index > 1 and (loop.index - 1) % 5 == 0 %}
+                                    <!-- Page Number Row -->
+                                    <tr style="border: 0;">
+                                        <td colspan="6" style="border: 0; text-align: center; padding-top: 5mm; padding-bottom: 0;">
+                                            <div style="font-size: 8pt;">– {{ _("Page") }} {{ page.current }} –</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div style="page-break-after: always;"></div>
+                            
+                            <!-- Re-open Table for Next Page -->
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">{{ _("Pos.") }}</th>
+                                        <th style="width: 45%;">{{ _("Description") }}</th>
+                                        <th style="width: 10%;" class="th-left">{{ _("Qty") }}</th>
+                                        <th style="width: 10%;" class="th-left">{{ _("Unit") }}</th>
+                                        <th style="width: 15%;" class="th-left">{{ _("Unit Price") }} {{ doc.currency }}</th>
+                                        <th style="width: 15%;" class="th-left">{{ _("Total Price") }} {{ doc.currency }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set page.current = page.current + 1 %}
+                                {% endif %}
+                            {% endif %}
+
                             <tr>
                                 <td>{{ loop.index }}.</td>
                                 <td>
@@ -520,6 +552,11 @@
                         <div style="display: flex; justify-content: flex-end; align-items: center; gap: 5mm;">
                             <div class="grand-total-label">{{ _("Total Amount") }}</div>
                             <div class="grand-total-value">{{ doc.get_formatted("grand_total") }}</div>
+                        </div>
+
+                        <!-- Manual Page Number for Last Page -->
+                        <div style="text-align: center; margin-top: 10mm; font-size: 8pt;">
+                            – {{ _("Page") }} {{ page.current }} –
                         </div>
                     </div>
 
