@@ -142,7 +142,10 @@
         
         .items-table { width: 100%; border-collapse: collapse; margin-bottom: 5mm; font-size: 9pt; }
         .items-table th { border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 2mm 1mm; text-align: left; background: white; }
-        .items-table td { padding: 2mm 1mm; border-bottom: 1px solid #ddd; vertical-align: top; }
+        .items-table td { padding: 2mm 1mm; border-bottom: 1px solid #ddd; vertical-align: top; border-top: 2px solid #000;
+    border-bottom: 2px solid #000;
+    padding: 2mm 1mm;
+    text-align: left; }
         .th-right, .td-right { text-align: right; }
         .th-center, .td-center { text-align: center; }
         .item-code { font-weight: bold; display: block; }
@@ -429,19 +432,22 @@
                                 <div class="total-col">1.102,00</div>
                                 <div class="total-col">6.902,00</div>
                             </div>
-                        </div>
-                        <div style="text-align: center; font-weight: bold; font-size: 11pt; margin-top: 5mm;">
-                            Invoice Amount: 6.902,00
+                            <div class="totals-value-row">
+                                <div class="total-col"></div>
+                                <div class="total-col"></div>
+                                <div class="total-col">Invoice Amount</div>
+                                <div class="total-col">6.902,00</div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- CLOSING -->
+                    <!-- CLOSING
                     <div class="closing-text">
                         Goods remain property of supplier until paid.
                     </div>
                     <div class="thanks-text">
                         Thank you for your order.
-                    </div>
+                    </div> -->
                 </div>
             </td>
         </tr>
