@@ -364,16 +364,19 @@
                             <div class="address-block">
                                 <span class="address-label">{{ _("Billing Address") }}:</span>
                                 <strong>{{ doc.supplier }}</strong><br>
-                                {% if contact %}
+                                {% if doc.contact_display %}
+                                    {{ doc.contact_display }}<br>
+                                {% elif contact %}
                                     {{ contact.first_name }} {{ contact.last_name }}<br>
                                 {% endif %}
                                 {{ doc.address_display or "" }}
                             </div>
 
-                            {% if doc.shipping_address_name %}
+                            {% if doc.shipping_address_name or doc.dispatch_address %}
                             <div class="address-block">
                                 <span class="address-label">{{ _("Shipping Address") }}:</span>
-                                {{ doc.shipping_address_display }}
+                                <strong>{{ doc.shipping_address_name or doc.dispatch_address }}</strong><br>
+                                {{ doc.shipping_address_display or doc.dispatch_address_display }}
                             </div>
                             {% endif %}
                         </div>
@@ -396,13 +399,27 @@
                                 <tr>
                                     <td>{{ _("Your Contact") }}:</td>
                                     <td>
-                                        {% if contact %}
+                                        {% if doc.contact_display %}
+                                            {{ doc.contact_display }}
+                                        {% elif contact %}
                                             {{ contact.first_name }} {{ contact.last_name }}
                                         {% else %}
                                             {{ doc.owner }}
                                         {% endif %}
                                     </td>
                                 </tr>
+                                {% if doc.contact_mobile %}
+                                <tr>
+                                    <td>{{ _("Phone") }}:</td>
+                                    <td>{{ doc.contact_mobile }}</td>
+                                </tr>
+                                {% endif %}
+                                {% if doc.contact_email %}
+                                <tr>
+                                    <td>{{ _("Email") }}:</td>
+                                    <td>{{ doc.contact_email }}</td>
+                                </tr>
+                                {% endif %}
                                 {% if doc.supplier_reference %}
                                 <tr>
                                     <td>{{ _("Your Reference") }}:</td>
@@ -442,8 +459,8 @@
                                 <th style="width: 45%;">{{ _("Description") }}</th>
                                 <th style="width: 10%;" class="th-left">{{ _("Qty") }}</th>
                                 <th style="width: 10%;" class="th-left">{{ _("Unit") }}</th>
-                                <th style="width: 15%;" class="th-left">{{ _("Unit Price") }} €</th>
-                                <th style="width: 15%;" class="th-left">{{ _("Total Price") }} €</th>
+                                <th style="width: 15%;" class="th-left">{{ _("Unit Price") }} {{ doc.currency }}</th>
+                                <th style="width: 15%;" class="th-left">{{ _("Total Price") }} {{ doc.currency }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -470,7 +487,7 @@
                         <div style="border-bottom: 1px solid #000; margin-bottom: 5mm; padding-bottom: 2mm;">
                             <div style="display: flex; justify-content: space-between; font-size: 9pt; color: #666;">
                                 <span>{{ _("Billing Address") }}: {{ doc.supplier }}</span>
-                                <span>{{ _("Shipping Address") }}: {{ doc.shipping_address_name or doc.supplier }}</span>
+                                <span>{{ _("Shipping Address") }}: {{ doc.shipping_address_name or doc.dispatch_address or doc.supplier }}</span>
                             </div>
                         </div>
 
@@ -480,10 +497,10 @@
 
                         <div class="totals-grid">
                             <div class="totals-header-row">
-                                <div class="total-col">{{ _("Net") }} (€)</div>
+                                <div class="total-col">{{ _("Net") }} ({{ doc.currency }})</div>
                                 <div class="total-col">{{ _("VAT") }} %</div>
                                 <div class="total-col">{{ _("VAT Amt") }}</div>
-                                <div class="total-col">{{ _("Gross") }} (€)</div>
+                                <div class="total-col">{{ _("Gross") }} ({{ doc.currency }})</div>
                             </div>
 
                             <div class="totals-value-row">
